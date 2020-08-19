@@ -8,9 +8,10 @@ import (
 
 func TestWindowMax(t *testing.T) {
 	tests := []struct {
-		name   string
-		values []float64
-		expect float64
+		name      string
+		values    []float64
+		indexFunc func(int) int
+		expect    float64
 	}{{
 		name:   "single value",
 		values: []float64{1},
@@ -31,6 +32,17 @@ func TestWindowMax(t *testing.T) {
 		name:   "windowing out",
 		values: []float64{5, 6, 5, 5, 5, 5, 5},
 		expect: 5,
+	}, {
+		name:   "windowing out with gaps",
+		values: []float64{6, 5, 2, 1},
+		indexFunc: func(i int) int {
+			if i >= 3 {
+				return i + 3
+			}
+
+			return i
+		},
+		expect: 2,
 	}, {
 		name:   "windowing out 2",
 		values: []float64{5, 6, 5, 7, 5, 5, 1},
@@ -64,8 +76,14 @@ func TestWindowMax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			max := window.NewMax(5)
+
+			indexFunc := func(i int) int { return i }
+			if tt.indexFunc != nil {
+				indexFunc = tt.indexFunc
+			}
+
 			for i, v := range tt.values {
-				max.Record(i, v)
+				max.Record(indexFunc(i), v)
 			}
 
 			if got, want := max.Current(), tt.expect; got != want {

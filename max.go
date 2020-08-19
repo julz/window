@@ -34,9 +34,8 @@ func (m *Max) Record(index int, v float64) {
 	}
 
 	// Step Two: Remove first element if it's out of date now.
-	// Only the first element can ever be bumped off, since we only ever add at
-	// the end of the list, so indexes are always in ascending order.
-	if index-m.maxima[m.first].index >= len(m.maxima) {
+	// We only ever add at end of list, so the indexes are in ascending order.
+	for index-m.maxima[m.first].index >= len(m.maxima) {
 		m.length--
 		m.first++
 
