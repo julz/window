@@ -1,6 +1,9 @@
 package window_test
 
 import (
+	"fmt"
+	"math"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -68,6 +71,51 @@ func TestTimedWindowMax(t *testing.T) {
 
 			if got, want := max.Current(), tt.expect; got != want {
 				t.Errorf("Current() = %f, expected %f", got, want)
+			}
+		})
+	}
+}
+
+func BenchmarkLargeTimeWindowCreate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = window.NewTimedMax(45*time.Minute, 1*time.Second)
+	}
+}
+
+func BenchmarkLargeTimeWindowRecord(b *testing.B) {
+	w := window.NewTimedMax(45*time.Minute, 1*time.Second)
+	now := time.Now()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		now = now.Add(1 * time.Second)
+		w.Record(now, rand.Float64())
+	}
+}
+
+// this is the best-case for the algorithm.
+func BenchmarkLargeTimeWindowAscendingRecord(b *testing.B) {
+	w := window.NewTimedMax(45*time.Minute, 1*time.Second)
+	now := time.Now()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		now = now.Add(1 * time.Second)
+		w.Record(now, float64(i))
+	}
+}
+
+// this is the worst-case for the algorithm.
+func BenchmarkLargeTimeWindowDescendingRecord(b *testing.B) {
+	for _, duration := range []time.Duration{5, 15, 30, 45} {
+		b.Run(fmt.Sprintf("duration-%d-minutes", duration), func(b *testing.B) {
+			w := window.NewTimedMax(duration*time.Minute, 1*time.Second)
+			now := time.Now()
+
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				now = now.Add(1 * time.Second)
+				w.Record(now, float64(math.MaxInt32-i))
 			}
 		})
 	}
