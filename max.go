@@ -30,6 +30,9 @@ func (m *Max) Record(index int, v float64) {
 		// The elements are in descending order as described in Step Three.
 		if v >= m.maxima[m.index(m.first+length-i-1)].value {
 			m.length--
+		} else {
+			// the elements are sorted, so no point continuing now.
+			break
 		}
 	}
 
