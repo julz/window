@@ -77,8 +77,12 @@ func TestTimedWindowMax(t *testing.T) {
 }
 
 func BenchmarkLargeTimeWindowCreate(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = window.NewTimedMax(45*time.Minute, 1*time.Second)
+	for _, duration := range []time.Duration{5, 15, 30, 45} {
+		b.Run(fmt.Sprintf("duration-%d-minutes", duration), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				_ = window.NewTimedMax(duration*time.Minute, 1*time.Second)
+			}
+		})
 	}
 }
 

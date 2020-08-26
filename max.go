@@ -12,6 +12,7 @@ type Max struct {
 	first, length int
 }
 
+// NewMax creates an descending minima window buffer of size size.
 func NewMax(size int) *Max {
 	return &Max{
 		maxima: make([]entry, size),
